@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Trace · Project demo</title>
+  <style>
+    :root{font-family:Arial,Helvetica,sans-serif;color:#111;background:#fff;font-synthesis:none}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center}button{font:inherit}
+    .deck{width:min(100vw,calc(100vh * 16 / 9));aspect-ratio:16/9;position:relative;container-type:inline-size;background:#fff}
+    .slide{position:absolute;inset:0;padding:6% 8%;display:flex;flex-direction:column;justify-content:flex-start}
+    [hidden]{display:none!important}
+    h1{font-size:3.5cqw;margin:0 0 3.5cqw;line-height:1.2;font-weight:700}
+    table{width:100%;border-collapse:collapse;font-size:2cqw;line-height:1.5}th,td{padding:.8cqw 0;vertical-align:top;text-align:left}th{width:24%;font-weight:700}td{font-weight:400}
+    .purpose{font-size:2.4cqw;line-height:1.5;margin:0}.prompts{margin-top:2cqw;font-size:2cqw;line-height:1.8;padding-left:2.4cqw}
+    .controls{position:fixed;bottom:12px;right:18px;display:flex;align-items:center;gap:14px;color:#555;font-size:13px;z-index:2}.controls button{border:1px solid #ccc;border-radius:2px;padding:7px 12px;background:#fff;color:#333;cursor:pointer}.controls button:focus-visible{outline:2px solid #333;outline-offset:3px}.controls button:disabled{opacity:.35;cursor:default}
+    @media print{@page{size:13.333in 7.5in;margin:0}body{display:block;background:#fff}.deck{width:13.333in;height:auto;aspect-ratio:auto;container-type:inline-size}.slide{position:relative;display:flex!important;width:13.333in;height:7.5in;break-after:page;background:#fff}.controls{display:none}}
+  </style>
+</head>
+<body>
+  <main class="deck" aria-label="Trace demo presentation">
+    <section class="slide" aria-label="Slide 1: Tech stack">
+      <h1>Tech stack</h1>
+      <table aria-label="Project technologies">
+        <tr><th scope="row">Frontend</th><td>HTML, CSS, JavaScript</td></tr>
+        <tr><th scope="row">Backend</th><td>Node.js + Express 5<br>CommonJS JavaScript, REST JSON API</td></tr>
+        <tr><th scope="row">Database</th><td>Supabase PostgreSQL</td></tr>
+        <tr><th scope="row">Accounts</th><td>Supabase Auth</td></tr>
+        <tr><th scope="row">Food data</th><td>USDA FoodData Central API</td></tr>
+        <tr><th scope="row">Tools</th><td>npm, dotenv, Node tests, Git + GitHub</td></tr>
+      </table>
+    </section>
+    <section class="slide product" aria-label="Slide 2: Trace nutrition diary" hidden>
+      <h1>Trace</h1>
+      <p class="purpose">A food diary focused on micronutrients</p>
+      <ul class="prompts"><li>Daily intake and nutrient gaps</li><li>Weekly averages</li><li>A private diary for each account</li></ul>
+    </section>
+  </main>
+  <nav class="controls" aria-label="Presentation controls">
+    <button id="previous" aria-label="Previous slide">←</button>
+    <span id="counter" aria-live="polite">1 / 2</span>
+    <button id="next" aria-label="Next slide">→</button>
+    <button id="fullscreen">Full screen</button>
+  </nav>
+  <script>
+    const slides = [...document.querySelectorAll('.slide')];
+    let current = 0;
+    function show(index) {
+      current = Math.max(0, Math.min(slides.length - 1, index));
+      slides.forEach((slide, i) => { slide.hidden = i !== current; });
+      document.getElementById('counter').textContent = `${current + 1} / ${slides.length}`;
+      document.getElementById('previous').disabled = current === 0;
+      document.getElementById('next').disabled = current === slides.length - 1;
+    }
+    async function fullscreen() {
+      try { if (document.fullscreenElement) await document.exitFullscreen(); else await document.documentElement.requestFullscreen(); }
+      catch { /* Browser window presentation remains available. */ }
+    }
+    document.getElementById('previous').addEventListener('click', () => show(current - 1));
+    document.getElementById('next').addEventListener('click', () => show(current + 1));
+    document.getElementById('fullscreen').addEventListener('click', fullscreen);
+    document.addEventListener('keydown', (event) => {
+      if (['ArrowRight','PageDown',' '].includes(event.key) && event.target.tagName !== 'BUTTON') { event.preventDefault(); show(current + 1); }
+      if (['ArrowLeft','PageUp'].includes(event.key)) { event.preventDefault(); show(current - 1); }
+      if (event.key.toLowerCase() === 'f') fullscreen();
+      if (event.key === 'Home') show(0);
+      if (event.key === 'End') show(slides.length - 1);
+    });
+    show(window.location.hash === '#2' ? 1 : 0);
+  </script>
+</body>
+</html>

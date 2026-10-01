@@ -2,9 +2,7 @@ const { createClient } = require("@supabase/supabase-js");
 
 let client;
 
-function getSupabase() {
-  if (client) return client;
-
+function createSupabase() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SECRET_KEY;
 
@@ -22,10 +20,15 @@ function getSupabase() {
     throw new Error("Use an HTTPS SUPABASE_URL and a server secret API key (sb_secret_...).");
   }
 
-  client = createClient(url, key, {
-    auth: { persistSession: false, autoRefreshToken: false },
+  return createClient(url, key, {
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+    global: { fetch: (url, options = {}) => fetch(url, { ...options, signal: options.signal || AbortSignal.timeout(12000) }) },
   });
+}
+
+function getSupabase() {
+  if (!client) client = createSupabase();
   return client;
 }
 
-module.exports = { getSupabase };
+module.exports = { getSupabase, createSupabase };
